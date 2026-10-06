@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Prototipo académico del Asistente Inteligente COLUA MICOOPE.">
+  <title>Asistente Inteligente COLUA</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-bg" aria-hidden="true"></div>
+    <div class="login-orb login-orb-a" aria-hidden="true"></div>
+    <div class="login-orb login-orb-b" aria-hidden="true"></div>
+
+    <div class="login-layout">
+      <aside class="login-showcase" aria-label="Presentación COLUA">
+        <div class="showcase-logo">
+          <img src="assets/logo-colua.png" alt="COLUA MICOOPE">
+        </div>
+        <div class="showcase-copy">
+          <span class="showcase-kicker">Asistente Colua</span>
+          <h1>Atención digital</h1>
+          <p>Consulta, orientación y precalificación en un solo espacio.</p>
+        </div>
+        <div class="showcase-status">
+          <span><i></i> Servicio disponible</span>
+        </div>
+      </aside>
+
+      <div class="login-panel">
+        <form class="login-card" id="loginForm" autocomplete="on">
+          <div class="form-head">
+            <div class="form-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 10V8a4 4 0 1 1 8 0v2"/><rect x="5" y="10" width="14" height="10" rx="3"/><path d="M12 14v2"/></svg>
+            </div>
+            <span class="login-tag">Acceso seguro</span>
+            <h2>Bienvenido</h2>
+            <p>Ingresa para continuar.</p>
+          </div>
+
+          <div class="login-field">
+            <label for="loginUser">Usuario</label>
+            <div class="login-input-shell">
+              <span class="login-input-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              </span>
+              <input id="loginUser" type="text" placeholder="Usuario" autocomplete="username" required>
+            </div>
+          </div>
+
+          <div class="login-field">
+            <label for="loginPassword">Contraseña</label>
+            <div class="login-input-shell password-field">
+              <span class="login-input-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              </span>
+              <input id="loginPassword" type="password" placeholder="Contraseña" autocomplete="current-password" required>
+              <button type="button" id="togglePassword" aria-label="Mostrar u ocultar contraseña">Ver</button>
+            </div>
+          </div>
+
+          <div class="login-options">
+            <label class="check-label"><input id="rememberUser" type="checkbox"><span>Recordarme</span></label>
+            <span class="secure-login"><i></i> Sesión protegida</span>
+          </div>
+
+          <button class="login-submit" type="submit">
+            <span>Iniciar sesión</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"/></svg>
+          </button>
+
+          <div class="login-error" id="loginError" role="alert"></div>
+
+          <div class="login-divider"><span>o</span></div>
+
+          <button class="register-open" id="openRegisterBtn" type="button">Crear una cuenta</button>
+        </form>
+
+        <form class="login-card register-card hidden" id="registerForm" autocomplete="off">
+          <div class="register-heading">
+            <div class="form-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2.5 21a7 7 0 0 1 13 0M18 8v6M15 11h6"/></svg>
+            </div>
+            <div>
+              <span class="login-tag">Nuevo acceso</span>
+              <h2>Crear cuenta</h2>
+              <p>Completa tus datos.</p>
+            </div>
+          </div>
+
+          <div class="register-grid">
+            <div class="login-field">
+              <label for="registerDpi">DPI</label>
+              <div class="login-input-shell">
+                <span class="login-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M13 9h5M13 13h5M6 16h4"/></svg></span>
+                <input id="registerDpi" type="text" inputmode="numeric" maxlength="13" placeholder="13 dígitos" required>
+              </div>
+            </div>
+
+            <div class="login-field">
+              <label for="registerName">Nombre completo</label>
+              <div class="login-input-shell">
+                <span class="login-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+                <input id="registerName" type="text" maxlength="100" placeholder="Nombres y apellidos" required>
+              </div>
+            </div>
+
+            <div class="login-field register-span-2">
+              <label for="registerAgency">Agencia</label>
+              <div class="login-input-shell select-shell">
+                <span class="login-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></span>
+                <select id="registerAgency" required><option value="">Selecciona tu agencia</option></select>
+              </div>
+              <small class="field-help">Se usa para mostrarte el contacto correspondiente.</small>
+            </div>
+
+            <div class="login-field">
+              <label for="registerUser">Usuario</label>
+              <div class="login-input-shell">
+                <span class="login-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+                <input id="registerUser" type="text" maxlength="40" placeholder="Crea un usuario" required>
+              </div>
+            </div>
+
+            <div class="login-field">
+              <label for="registerPassword">Contraseña</label>
+              <div class="login-input-shell password-field">
+                <span class="login-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+                <input id="registerPassword" type="password" minlength="10" placeholder="Mínimo 10 caracteres" required>
+                <button type="button" id="toggleRegisterPassword" aria-label="Mostrar u ocultar contraseña">Ver</button>
+              </div>
+            </div>
+
+            <div class="login-field register-span-2">
+              <label for="registerPasswordConfirm">Confirmar contraseña</label>
+              <div class="login-input-shell">
+                <span class="login-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+                <input id="registerPasswordConfirm" type="password" minlength="10" placeholder="Repite tu contraseña" required>
+              </div>
+            </div>
+          </div>
+
+          <label class="privacy-check"><input id="registerConsent" type="checkbox" required><span>Confirmo que los datos proporcionados son correctos y autorizo su uso para gestionar mi cuenta y precalificación.</span></label>
+
+          <div class="register-actions">
+            <button class="register-open" id="backToLoginBtn" type="button">Volver</button>
+            <button class="login-submit" type="submit"><span>Crear cuenta</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"/></svg></button>
+          </div>
+          <div class="login-error" id="registerError" role="alert"></div>
+          <div class="register-success" id="registerSuccess" role="status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <div class="app-shell hidden" id="appShell">
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-card">
+        <img src="assets/logo-colua.png" alt="COLUA MICOOPE">
+        <div><strong>Asistente</strong><span>Inteligente</span></div>
+      </div>
+
+      <nav class="nav-menu" aria-label="Navegación principal">
+        <span class="nav-caption">MENÚ</span>
+        <button class="nav-item active member-only" type="button" data-section="home">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>
+          <span>Inicio</span>
+        </button>
+        <button class="nav-item member-only" type="button" id="focusChatBtn" data-section="chat">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-5 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="11" r="1"/><circle cx="16" cy="11" r="1"/></svg></span>
+          <span>Chat</span>
+        </button>
+        <button
+          class="nav-item member-only"
+          type="button"
+          id="historyBtn"
+          data-section="history"
+        >
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/>
+              <path d="M3 4v6h6"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+          </span>
+
+          <span>Historial</span>
+        </button>
+        <button class="nav-item member-only" type="button" id="prequalBtn" data-section="prequal">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v16H5V5a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+          <span>Precalificación</span>
+        </button>
+        <button class="nav-item staff-only" type="button" id="advisorDashboardBtn" data-section="advisor">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5M16 16h.01"/></svg></span>
+          <span>Solicitudes</span>
+        </button>
+        <button class="nav-item" type="button" id="profileBtn">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M18 5l2 2"/></svg>
+          </span>
+          <span>Mi perfil</span>
+        </button>
+        <button class="nav-item admin-only" type="button" id="analyticsBtn" data-section="analytics">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+          <span>Analítica</span>
+        </button>
+        <button class="nav-item admin-only" type="button" id="usersAdminBtn" data-section="users">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2.5 21a7 7 0 0 1 13 0M18 8v6M15 11h6"/></svg></span>
+          <span>Usuarios</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-message">
+        <div class="sidebar-message-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg></div>
+        <p>Impulsamos tus metas,<br><strong>fortalecemos tu futuro.</strong></p>
+      </div>
+      <div class="sidebar-note"><span>Trabajo de graduación</span><strong>COLUA · 2026</strong></div>
+    </aside>
+
+    <main class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Abrir menú">☰</button>
+          <div class="topbar-greeting">
+            <span id="welcomeLabel">Bienvenido</span>
+            <strong>Asistente Inteligente COLUA</strong>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="date-chip"><span id="currentDateLabel">—</span><strong id="currentTimeLabel">—</strong></div>
+          <div class="session-user">
+            <div class="session-avatar" id="sessionAvatar">A</div>
+            <div class="session-copy"><strong id="sessionName">Asociado</strong><span id="sessionRole">Usuario</span></div>
+            <button id="logoutBtn" type="button" title="Cerrar sesión" aria-label="Cerrar sesión"><svg viewBox="0 0 24 24"><path d="M10 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5M14 8l4 4-4 4M18 12H9"/></svg><span>Salir</span></button>
+          </div>
+        </div>
+      </div>
+
+      <header class="hero" id="homeSection">
+        <div class="hero-shape hero-shape-a"></div>
+        <div class="hero-shape hero-shape-b"></div>
+        <div class="hero-content">
+          <span class="hero-chip"><i></i> Asistencia digital</span>
+          <h1>Tu cooperativa,<br><span>más cerca.</span></h1>
+          <p>Resuelve consultas e inicia una precalificación de crédito de forma guiada.</p>
+          <div class="hero-actions">
+            <button class="primary-action" id="startPrequalHeroBtn" type="button"><span>Precalificar crédito</span><svg viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></svg></button>
+            <button class="secondary-action" id="startChatBtn" type="button">Hacer una consulta</button>
+          </div>
+        </div>
+        <div class="hero-side" aria-hidden="true">
+          <div class="hero-logo-card"><img src="assets/logo-colua.png" alt=""></div>
+          <div class="hero-mini-stat"><span>Estado</span><strong><i></i> En línea</strong></div>
+        </div>
+      </header>
+
+      <!-- ======================================================
+     INICIO - SERVICIOS
+     ====================================================== -->
+
+<section class="service-strip" id="serviceStrip" aria-label="Servicios disponibles">
+
+  <article>
+    <span class="service-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 20h16M6 20V9l6-4 6 4v11M9 13h6"/>
+      </svg>
+    </span>
+
+    <div>
+      <strong>Créditos</strong>
+      <span>Información y requisitos</span>
+    </div>
+  </article>
+
+  <article>
+    <span class="service-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M8 12h8M12 8v8"/>
+      </svg>
+    </span>
+
+    <div>
+      <strong>Precalificación</strong>
+      <span>Proceso guiado</span>
+    </div>
+  </article>
+
+  <article>
+    <span class="service-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 5.5h16v11H9l-5 3v-14Z"/>
+        <path d="M8 10h8M8 13h5"/>
+      </svg>
+    </span>
+
+    <div>
+      <strong>Atención</strong>
+      <span>Canales de contacto</span>
+    </div>
+  </article>
+
+</section>
+
+
+<!-- ======================================================
+     INICIO - ACCIONES PRINCIPALES
+     ====================================================== -->
+
+    <section class="home-actions" id="homeActions">
+
+      <div class="home-actions-heading">
+
+        <div>
+          <span class="eyebrow">¿CÓMO PODEMOS AYUDARTE?</span>
+          <h2>¿Qué deseas hacer hoy?</h2>
+        </div>
+
+        <p>
+          Elige una opción y nuestro asistente virtual te acompañará
+          durante el proceso.
+        </p>
+
+      </div>
+
+
+      <div class="home-action-grid">
+
+        <!-- PRODUCTOS -->
+
+        <button
+          class="home-action-card"
+          type="button"
+          data-home-action="products"
+        >
+
+          <span class="home-action-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 20h16"/>
+              <path d="M6 20V9l6-4 6 4v11"/>
+              <path d="M9 13h6"/>
+            </svg>
+          </span>
+
+          <span class="home-action-copy">
+            <strong>Conocer productos</strong>
+
+            <small>
+              Consulta información sobre créditos,
+              ahorros y otros servicios.
+            </small>
+          </span>
+
+          <span class="home-action-arrow">→</span>
+
+        </button>
+
+
+        <!-- PRECALIFICACIÓN -->
+
+        <button
+          class="home-action-card featured"
+          type="button"
+          data-home-action="prequal"
+        >
+
+          <span class="home-action-badge">
+            Proceso guiado
+          </span>
+
+          <span class="home-action-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 3h10a2 2 0 0 1 2 2v16H5V5a2 2 0 0 1 2-2Z"/>
+              <path d="M8 8h8M8 12h8M8 16h5"/>
+            </svg>
+          </span>
+
+          <span class="home-action-copy">
+            <strong>Precalificar un crédito</strong>
+
+            <small>
+              Responde algunas preguntas y obtén
+              una evaluación preliminar.
+            </small>
+          </span>
+
+          <span class="home-action-arrow">→</span>
+
+        </button>
+
+
+        <!-- CONSULTA -->
+
+        <button
+          class="home-action-card"
+          type="button"
+          data-home-action="question"
+        >
+
+          <span class="home-action-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 5.5h16v11H9l-5 3v-14Z"/>
+              <path d="M8 10h8M8 13h5"/>
+            </svg>
+          </span>
+
+          <span class="home-action-copy">
+            <strong>Hacer una consulta</strong>
+
+            <small>
+              Pregunta directamente al asistente
+              virtual de COLUA.
+            </small>
+          </span>
+
+          <span class="home-action-arrow">→</span>
+
+        </button>
+
+
+        <!-- HISTORIAL -->
+
+        <button
+          class="home-action-card"
+          type="button"
+          data-home-action="history"
+        >
+
+          <span class="home-action-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/>
+              <path d="M3 4v6h6"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+          </span>
+
+          <span class="home-action-copy">
+            <strong>Continuar una conversación</strong>
+
+            <small>
+              Consulta tu historial y continúa
+              exactamente donde lo dejaste.
+            </small>
+          </span>
+
+          <span class="home-action-arrow">→</span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================================
+        CHAT
+        ====================================================== -->
+
+    <section class="content-wrap hidden" id="chatSection">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="eyebrow">ASISTENTE VIRTUAL</span>
+          <h2>¿En qué podemos ayudarte?</h2>
+        </div>  
+
+        <p>
+          Selecciona una consulta rápida o escribe tu pregunta.
+        </p>
+
+      </div>
+
+
+      <article class="chat-card" id="chatCard">
+
+        <div class="chat-header">
+
+          <div class="assistant-identity">
+
+            <div class="assistant-avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <rect x="4" y="7" width="16" height="12" rx="4"/>
+                <path d="M12 3v4M8 12h.01M16 12h.01M8 16h8"/>
+              </svg>
+            </div>
+
+            <div>
+              <h3>Asistente Virtual COLUA</h3>
+
+              <p id="ragStatusLine">
+                <span class="online-dot"></span>
+                <span id="ragStatusText">
+                  Conectando base RAG…
+                </span>
+              </p>
+            </div>
+
+          </div>
+
+
+          <button
+            class="new-chat-btn"
+            id="resetBtn"
+            type="button"
+          >
+
+            <svg viewBox="0 0 24 24">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+
+            <span>Nueva conversación</span>
+
+          </button>
+
+        </div>
+
+
+        <div class="security-note">
+
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="10" width="14" height="10" rx="2"/>
+            <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+          </svg>
+
+          <span>
+            No compartas contraseñas, PIN ni información bancaria sensible.
+          </span>
+
+        </div>
+
+
+        <div
+          class="prequal-status hidden"
+          id="prequalStatus"
+        >
+
+          <div>
+            <span class="prequal-kicker">
+              Precalificación en curso
+            </span>
+
+            <strong id="prequalStepLabel">
+              Paso 1
+            </strong>
+
+            <small id="prequalStepText">
+              Inicio del proceso
+            </small>
+          </div>
+
+          <div class="prequal-progress">
+            <span id="prequalProgressBar"></span>
+          </div>
+
+          <button
+            type="button"
+            id="cancelPrequalBtn"
+          >
+            Cancelar
+          </button>
+
+        </div>
+
+
+        <div
+          class="messages"
+          id="messages"
+          aria-live="polite"
+        ></div>
+
+
+        <div class="quick-area">
+
+          <span class="quick-label">
+            Consultas rápidas
+          </span>
+
+          <div
+            class="quick-actions"
+            id="quickActions"
+          ></div>
+
+        </div>
+
+
+        <form
+          class="composer"
+          id="chatForm"
+          autocomplete="off"
+        >
+
+          <div class="input-shell">
+
+            <input
+              id="messageInput"
+              type="text"
+              maxlength="300"
+              placeholder="Escribe tu consulta..."
+              aria-label="Escribe tu consulta"
+            >
+
+            <span
+              class="counter"
+              id="counter"
+            >
+              0/300
+            </span>
+
+          </div>
+
+          <button
+            type="submit"
+            aria-label="Enviar mensaje"
+          >
+
+            <span>Enviar</span>
+
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m3 11 18-8-8 18-2-8zM11 13l10-10"/>
+            </svg>
+
+          </button>
+
+        </form>
+
+
+        <footer class="chat-footer">
+
+          <span>
+            Asistente digital COLUA
+          </span>
+
+          <p>
+            La aprobación de créditos corresponde exclusivamente
+            al personal autorizado de COLUA.
+          </p>
+
+        </footer>
+
+      </article>
+
+    </section>
+
+
+    <!-- ======================================================
+        HISTORIAL
+        ====================================================== -->
+
+    <section
+      class="history-section hidden"
+      id="historySection"
+    >
+
+      <div class="section-heading history-page-heading">
+
+        <div>
+          <span class="eyebrow">
+            MIS CONVERSACIONES
+          </span>
+
+          <h2>
+            Historial de conversaciones
+          </h2>
+        </div>
+
+        <p>
+          Retoma una conversación anterior o comienza una nueva
+          cuando lo necesites.
+        </p>
+
+      </div>
+
+
+      <article class="history-card">
+
+        <div class="history-header">
+
+          <div class="history-header-copy">
+
+            <span class="history-count-label">
+              CONVERSACIONES RECIENTES
+            </span>
+
+            <h3>
+              Continúa donde lo dejaste
+            </h3>
+
+            <p>
+              Selecciona una conversación para abrirla
+              y seguir consultando al asistente.
+            </p>
+
+          </div>
+
+
+          <button
+            class="new-chat-btn history-new-btn"
+            id="newConversationHistoryBtn"
+            type="button"
+          >
+
+            <svg viewBox="0 0 24 24">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+
+            <span>
+              Nueva conversación
+            </span>
+
+          </button>
+
+        </div>
+
+
+        <div
+          class="history-list"
+          id="chatHistoryList"
+        >
+
+          <div class="history-empty">
+
+            <div class="history-empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 5.5h16v11H9l-5 3v-14Z"/>
+                <path d="M8 10h8M8 13h5"/>
+              </svg>
+            </div>
+
+            <strong>
+              Cargando conversaciones...
+            </strong>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </section>
+      <section class="advisor-section hidden" id="advisorSection">
+        <div class="advisor-hero">
+          <div>
+            <span class="eyebrow">GESTIÓN DE PRECALIFICACIONES</span>
+            <h2>Seguimiento de solicitudes</h2>
+            <p id="advisorScopeText">Consulta y da seguimiento a las precalificaciones asignadas.</p>
+          </div>
+          <div class="advisor-agency-chip">
+            <span>Ámbito de consulta</span>
+            <strong id="advisorAgencyName">Agencia</strong>
+            <small id="advisorAgencyHint">Solo solicitudes autorizadas</small>
+          </div>
+        </div>
+
+        <div class="advisor-metric-grid">
+          <article class="advisor-metric-card"><span>Total</span><strong id="advisorTotalRequests">0</strong><small>Solicitudes visibles</small></article>
+          <article class="advisor-metric-card"><span>Pendientes</span><strong id="advisorPendingRequests">0</strong><small>Por revisar</small></article>
+          <article class="advisor-metric-card"><span>En revisión</span><strong id="advisorReviewRequests">0</strong><small>En seguimiento</small></article>
+          <article class="advisor-metric-card"><span>Contactados</span><strong id="advisorContactedRequests">0</strong><small>Con gestión registrada</small></article>
+          <article class="advisor-metric-card"><span>Derivados</span><strong id="advisorDerivedRequests">0</strong><small>Proceso formal</small></article>
+        </div>
+
+        <article class="advisor-panel">
+          <div class="advisor-panel-header">
+            <div>
+              <span class="eyebrow">BANDEJA DE TRABAJO</span>
+              <h3>Precalificaciones recibidas</h3>
+              <p>Filtra, revisa el detalle y registra el avance de cada caso.</p>
+            </div>
+            <button class="outline-btn" id="advisorRefreshBtn" type="button">Actualizar vista</button>
+          </div>
+
+          <div class="advisor-filters">
+            <label class="advisor-filter-search">
+              <span>Buscar</span>
+              <input id="advisorSearch" type="search" placeholder="Código, nombre, teléfono o destino">
+            </label>
+            <label>
+              <span>Estado</span>
+              <select id="advisorStatusFilter">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="en_revision">En revisión</option>
+                <option value="contactado">Contactado</option>
+                <option value="derivado">Derivado a proceso formal</option>
+                <option value="cerrado">Cerrado</option>
+              </select>
+            </label>
+            <label class="admin-only advisor-agency-filter" id="advisorAgencyFilterWrap">
+              <span>Agencia</span>
+              <select id="advisorAgencyFilter"><option value="">Todas las agencias</option></select>
+            </label>
+            <button class="advisor-clear-filter" id="advisorClearFilters" type="button">Limpiar filtros</button>
+          </div>
+
+          <div class="advisor-table-wrap">
+            <table class="advisor-table">
+              <thead>
+                <tr><th>Solicitud</th><th>Fecha</th><th>Solicitante</th><th>Contacto</th><th>Monto</th><th>Destino</th><th>Estado</th><th></th></tr>
+              </thead>
+              <tbody id="advisorRequestRows"></tbody>
+            </table>
+          </div>
+          <div class="advisor-empty hidden" id="advisorEmptyState">
+            <strong>No hay solicitudes para mostrar.</strong>
+            <span>Las nuevas precalificaciones de la agencia aparecerán en esta bandeja.</span>
+          </div>
+          <div class="advisor-storage-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>Prototipo local: la separación por agencia ya está aplicada en la interfaz. Para uso entre equipos distintos, el siguiente paso es mover estas solicitudes a un backend y base de datos central.</span>
+          </div>
+        </article>
+      </section>
+      <section class="analytics-section hidden" id="analyticsSection">
+        <div class="section-heading analytics-heading"><div><span class="eyebrow">PANEL ADMINISTRATIVO</span><h2>Analítica operativa</h2></div><button class="outline-btn" id="clearAnalytics" type="button">Auditoría protegida</button></div>
+        <div class="metric-grid">
+          <article class="metric-card"><span>Total de consultas</span><strong id="totalQueries">0</strong><small>Interacciones registradas</small></article>
+          <article class="metric-card"><span>Categoría principal</span><strong id="topCategory">Sin datos</strong><small>Mayor interés</small></article>
+          <article class="metric-card"><span>Sesiones</span><strong id="totalSessions">0</strong><small>Accesos registrados</small></article>
+          <article class="metric-card"><span>Precalificaciones</span><strong id="totalPrequalifications">0</strong><small>Procesos completados</small></article>
+          <article class="metric-card"><span>Continuaciones</span><strong id="totalContinuations">0</strong><small>Contacto posterior</small></article>
+        </div>
+        <div class="analytics-grid">
+          <article class="analytics-card">
+            <div class="analytics-card-header"><div><h3>Tipo de consulta</h3><p>Consumo de tokens del servicio de IA.</p></div><span>Servidor</span></div>
+            <div class="bars" id="categoryBars"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-header"><div><h3>Consultas por agencia</h3><p>Concentración de actividad registrada.</p></div><span>Sin DPI</span></div>
+            <div class="bars" id="agencyBars"></div>
+          </article>
+        </div>
+        <article class="analytics-card full-card">
+          <div class="analytics-card-header"><div><h3>Precalificaciones recientes</h3><p>Resumen para seguimiento por agencia.</p></div><span>Revisión humana</span></div>
+          <div class="query-table-wrap"><table class="query-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Agencia</th><th>Monto solicitado</th><th>Carga actual</th><th>Estado</th></tr></thead><tbody id="recentPrequalifications"></tbody></table></div>
+        </article>
+        <article class="analytics-card full-card">
+          <div class="analytics-card-header"><div><h3>Consultas recientes</h3><p>Registro resumido de interacciones.</p></div></div>
+          <div class="query-table-wrap"><table class="query-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Agencia</th><th>Categoría</th><th>Consulta</th></tr></thead><tbody id="recentQueries"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="analytics-section hidden" id="userAdminSection">
+        <div class="section-heading analytics-heading">
+          <div><span class="eyebrow">ADMINISTRACIÓN</span><h2>Usuarios y asesores</h2><p>Crea el usuario asesor de cada agencia y administra sus accesos.</p></div>
+        </div>
+        <div class="admin-user-grid">
+          <form class="analytics-card admin-user-form" id="adminCreateUserForm">
+            <div class="analytics-card-header"><div><h3>Nuevo asesor</h3><p>La contraseña temporal no queda escrita en el código.</p></div></div>
+            <label>Nombre<input id="adminUserName" type="text" maxlength="140" required placeholder="Nombre del asesor"></label>
+            <label>Usuario<input id="adminUsername" type="text" maxlength="60" required placeholder="asesor.agencia"></label>
+            <label>Agencia<select id="adminUserAgency" required><option value="">Selecciona una agencia</option></select></label>
+            <label>Contraseña temporal<input id="adminTempPassword" type="password" minlength="10" required placeholder="Mínimo 10 caracteres"></label>
+            <button class="login-submit compact" type="submit">Crear asesor</button>
+            <div class="profile-message" id="adminUserMessage"></div>
+          </form>
+          <article class="analytics-card">
+            <div class="analytics-card-header"><div><h3>Usuarios registrados</h3><p>Las contraseñas se almacenan únicamente como hash Argon2id.</p></div><button class="outline-btn" type="button" id="refreshAdminUsers">Actualizar</button></div>
+            <div class="query-table-wrap">
+              <table class="query-table"><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Agencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="adminUsersRows"></tbody></table>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <!-- =====================================================
+     CONFIGURACIÓN DE PERFIL
+     ===================================================== -->
+
+  <div class="modal-backdrop hidden" id="requestDetailModal" role="dialog" aria-modal="true" aria-labelledby="requestDetailTitle">
+    <div class="request-detail-modal">
+      <div class="request-detail-header">
+        <div>
+          <span class="eyebrow">PRECALIFICACIÓN CREDITICIA</span>
+          <div class="request-title-line">
+            <h2 id="requestDetailTitle">Detalle de solicitud</h2>
+            <span class="request-code" id="detailRequestId">PQ-0000</span>
+          </div>
+          <p>Resumen recopilado por el chatbot para revisión y seguimiento humano.</p>
+        </div>
+        <button type="button" id="closeRequestDetail" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="request-detail-body">
+        <section class="request-overview-card">
+          <div class="request-person-head">
+            <div class="request-person-avatar" id="detailApplicantAvatar">U</div>
+            <div><span>Solicitante</span><strong id="detailApplicantName">Usuario</strong><small id="detailUsername">usuario</small></div>
+            <span class="workflow-badge status-pendiente" id="detailWorkflowBadge">Pendiente</span>
+          </div>
+          <div class="request-contact-grid">
+            <div><span>Agencia</span><strong id="detailAgency">—</strong></div>
+            <div><span>Fecha</span><strong id="detailCreatedAt">—</strong></div>
+            <div><span>Teléfono</span><strong id="detailPhone">—</strong></div>
+            <div><span>Preferencia</span><strong id="detailContactPreference">—</strong></div>
+          </div>
+          <div class="request-contact-actions">
+            <button type="button" id="advisorCallApplicant">Llamar</button>
+            <button type="button" id="advisorWhatsappApplicant">WhatsApp</button>
+          </div>
+        </section>
+
+        <section class="request-financial-card">
+          <div class="request-card-heading"><div><span>RESUMEN FINANCIERO</span><h3>Información declarada</h3></div><span class="request-result-pill" id="detailPreliminaryResult">Resultado preliminar</span></div>
+          <div class="request-financial-grid">
+            <div><span>Ingresos mensuales</span><strong id="detailIncome">Q0.00</strong></div>
+            <div><span>Obligaciones mensuales</span><strong id="detailDebts">Q0.00</strong></div>
+            <div><span>Disponibilidad estimada</span><strong id="detailAvailable">Q0.00</strong></div>
+            <div><span>Carga reportada</span><strong id="detailDebtRatio">0%</strong></div>
+            <div><span>Monto solicitado</span><strong id="detailAmount">Q0.00</strong></div>
+            <div><span>Cuotas atrasadas</span><strong id="detailArrears">No</strong></div>
+          </div>
+          <div class="request-long-grid">
+            <div><span>Situación laboral</span><strong id="detailEmployment">—</strong></div>
+            <div><span>Antigüedad</span><strong id="detailTenure">—</strong></div>
+            <div class="request-purpose"><span>Destino del crédito</span><strong id="detailPurpose">—</strong></div>
+          </div>
+        </section>
+
+        <section class="request-followup-card">
+          <div class="request-card-heading"><div><span>SEGUIMIENTO</span><h3>Gestión del asesor</h3><p>Estos estados representan seguimiento operativo, no aprobación crediticia.</p></div></div>
+          <div class="request-followup-grid">
+            <label><span>Estado de seguimiento</span><select id="detailWorkflowStatus"></select></label>
+            <label class="request-notes-field"><span>Observaciones del asesor</span><textarea id="detailAdvisorNotes" maxlength="800" placeholder="Registra llamadas, documentos pendientes o próximos pasos..."></textarea><small><span id="detailNotesCount">0</span>/800</small></label>
+          </div>
+          <div class="request-save-row">
+            <span id="detailUpdatedAt">Sin cambios registrados</span>
+            <button type="button" id="saveRequestFollowup">Guardar seguimiento</button>
+          </div>
+        </section>
+
+        <section class="request-history-card">
+          <div class="request-card-heading"><div><span>HISTORIAL</span><h3>Actividad reciente</h3></div></div>
+          <div class="request-history" id="detailHistory"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+    <div class="profile-modal">
+      <div class="profile-modal-header">
+        <div class="profile-title-wrap">
+          <div class="profile-header-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M18 4v4M16 6h4"/></svg>
+          </div>
+          <div>
+            <span class="eyebrow">CONFIGURACIÓN DE CUENTA</span>
+            <h2 id="profileModalTitle">Mi perfil</h2>
+            <p>Consulta tus datos, administra tu fotografía y actualiza tu acceso.</p>
+          </div>
+        </div>
+        <button type="button" id="closeProfileModal" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="profile-content">
+        <aside class="profile-summary">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar-large" id="profileAvatarPreview">A</div>
+            <span class="profile-status-dot" title="Sesión activa"></span>
+          </div>
+          <div class="profile-summary-copy">
+            <strong id="profileDisplayName">Usuario COLUA</strong>
+            <span id="profileDisplayRole">Asociado</span>
+            <small id="profileDisplayAgency">Agencia no indicada</small>
+          </div>
+
+          <input type="file" id="profileImageInput" accept="image/png,image/jpeg,image/webp" hidden>
+
+          <div class="profile-photo-actions">
+            <button type="button" class="profile-primary-btn" id="changeProfileImageBtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l1.5-2h5L16 7h4v12H4z"/><circle cx="12" cy="13" r="3"/></svg>
+              <span>Cambiar fotografía</span>
+            </button>
+            <button type="button" class="profile-secondary-btn" id="removeProfileImageBtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M8 10v8M12 10v8M16 10v8M6 7l1 14h10l1-14"/></svg>
+              <span>Eliminar fotografía</span>
+            </button>
+          </div>
+
+          <p class="profile-photo-help">JPG, PNG o WEBP · Máximo 5 MB. La imagen se optimiza automáticamente.</p>
+          <div class="profile-local-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>Los datos del perfil se almacenan en el servidor y la sesión utiliza una cookie segura HttpOnly.</span>
+          </div>
+        </aside>
+        
+
+        <section class="profile-details">
+          <div class="profile-section-card">
+            <div class="profile-section-heading">
+              <div>
+                <span>INFORMACIÓN PERSONAL</span>
+                <h3>Datos de la cuenta</h3>
+              </div>
+              <span class="profile-readonly-badge">Solo lectura</span>
+            </div>
+
+            <div class="profile-info-grid">
+              <div class="profile-field">
+                <label for="profileName">Nombre</label>
+                <input type="text" id="profileName" readonly>
+              </div>
+              <div class="profile-field">
+                <label for="profileUsername">Usuario</label>
+                <input type="text" id="profileUsername" readonly>
+              </div>
+              <div class="profile-field">
+                <label for="profileAgency">Agencia</label>
+                <input type="text" id="profileAgency" readonly>
+              </div>
+              <div class="profile-field">
+                <label for="profileRole">Tipo de usuario</label>
+                <input type="text" id="profileRole" readonly>
+              </div>
+            </div>
+          </div>
+
+          <form id="changePasswordForm" class="profile-section-card profile-security-card">
+            <div class="profile-section-heading">
+              <div>
+                <span>SEGURIDAD</span>
+                <h3>Cambiar contraseña</h3>
+                <p>Confirma tu contraseña actual y define una nueva de al menos 10 caracteres.</p>
+              </div>
+              <div class="profile-security-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              </div>
+            </div>
+
+            <div class="profile-field">
+              <label for="currentProfilePassword">Contraseña actual</label>
+              <div class="profile-password-shell">
+                <input id="currentProfilePassword" type="password" autocomplete="current-password" placeholder="Ingresa tu contraseña actual" required>
+                <button type="button" id="toggleCurrentProfilePassword" aria-label="Mostrar u ocultar contraseña actual">Ver</button>
+              </div>
+            </div>
+
+            <div class="profile-password-grid">
+              <div class="profile-field">
+                <label for="newProfilePassword">Nueva contraseña</label>
+                <div class="profile-password-shell">
+                  <input id="newProfilePassword" type="password" minlength="10" autocomplete="new-password" placeholder="Mínimo 10 caracteres" required>
+                  <button type="button" id="toggleNewProfilePassword" aria-label="Mostrar u ocultar nueva contraseña">Ver</button>
+                </div>
+              </div>
+              <div class="profile-field">
+                <label for="confirmProfilePassword">Confirmar contraseña</label>
+                <div class="profile-password-shell">
+                  <input id="confirmProfilePassword" type="password" minlength="10" autocomplete="new-password" placeholder="Repite la contraseña" required>
+                  <button type="button" id="toggleConfirmProfilePassword" aria-label="Mostrar u ocultar confirmación de contraseña">Ver</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-password-hint">
+              <span class="password-strength-dot" id="passwordStrengthDot"></span>
+              <span id="passwordStrengthText">Usa al menos 10 caracteres, letras y números.</span>
+            </div>
+            <div class="profile-message" id="profilePasswordMessage" role="status" aria-live="polite"></div>
+
+            <div class="profile-footer">
+              <button type="submit" class="profile-save-btn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"/></svg>
+                <span>Actualizar contraseña</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden" id="adminResetPasswordModal" role="dialog" aria-modal="true" aria-labelledby="adminResetPasswordTitle">
+    <div class="admin-password-modal">
+      <div class="agency-modal-header">
+        <div><span class="eyebrow">SEGURIDAD</span><h2 id="adminResetPasswordTitle">Restablecer contraseña</h2><p id="adminResetPasswordUser">Usuario</p></div>
+        <button type="button" id="closeAdminResetPassword" aria-label="Cerrar">×</button>
+      </div>
+      <form id="adminResetPasswordForm" class="admin-password-modal-body">
+        <div class="profile-field">
+          <label for="adminResetPasswordValue">Contraseña temporal</label>
+          <input id="adminResetPasswordValue" type="password" minlength="10" autocomplete="new-password" required placeholder="Mínimo 10 caracteres, letras y números">
+        </div>
+        <div class="profile-field">
+          <label for="adminResetPasswordConfirm">Confirmar contraseña</label>
+          <input id="adminResetPasswordConfirm" type="password" minlength="10" autocomplete="new-password" required placeholder="Repite la contraseña temporal">
+        </div>
+        <div class="profile-message" id="adminResetPasswordMessage" role="status" aria-live="polite"></div>
+        <div class="profile-footer">
+          <button type="button" class="profile-secondary-btn" id="cancelAdminResetPassword">Cancelar</button>
+          <button type="submit" class="profile-save-btn">Restablecer contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="agencyModal" role="dialog" aria-modal="true" aria-labelledby="agencyModalTitle">
+    <div class="agency-modal">
+      <div class="agency-modal-header">
+        <div><span class="eyebrow">CONTINUAR CON COLUA</span><h2 id="agencyModalTitle">Teléfonos de agencias</h2><p>Selecciona una agencia para continuar.</p></div>
+        <button type="button" id="closeAgencyModal" aria-label="Cerrar">×</button>
+      </div>
+      <div class="agency-list" id="agencyList"></div>
+      <div class="agency-modal-footer">
+        <button type="button" class="outline-btn" id="openOfficialAgencies">Ver directorio oficial</button>
+        <button type="button" class="login-submit compact" id="agencyWhatsappBtn">WhatsApp 7795 7795</button>
+      </div>
+      <p class="modal-note">Los contactos y agencias deben mantenerse actualizados por el personal autorizado de COLUA.</p>
+    </div>
+  </div>
+
+  <div class="ui-toast" id="uiToast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
