@@ -20,6 +20,7 @@ let CSRF_TOKEN = '';
 let AGENCIES = [];
 let PREQUAL_CACHE = [];
 let CHAT_CONVERSATION_ID = null;
+let CHAT_HISTORY_CACHE = [];
 
 const WORKFLOW_STATUSES = [
   { value:'pendiente', label:'Pendiente' },
@@ -66,7 +67,7 @@ async function apiFetch(url, options={}){
 
 function currentUser(){ return CURRENT_USER; }
 function syncCurrentUser(user){ CURRENT_USER=user; }
-function clearCurrentUser(){ CURRENT_USER=null; CSRF_TOKEN=''; CHAT_CONVERSATION_ID=null; PREQUAL_CACHE=[]; }
+function clearCurrentUser(){ CURRENT_USER=null; CSRF_TOKEN=''; CHAT_CONVERSATION_ID=null; PREQUAL_CACHE=[]; CHAT_HISTORY_CACHE=[]; }
 
 async function loadAgencies(){
   const data=await apiFetch('/api/agencies');
@@ -1996,340 +1997,163 @@ document
     );
 
   });
-async function loadChatHistory(){
+function historyGroupLabel(updatedAt){
+  if(!updatedAt) return 'Anteriores';
+  const date=new Date(updatedAt);
+  if(Number.isNaN(date.getTime())) return 'Anteriores';
+  const now=new Date();
+  const startToday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const startDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  const diffDays=Math.floor((startToday-startDate)/86400000);
+  if(diffDays===0) return 'Hoy';
+  if(diffDays===1) return 'Ayer';
+  if(diffDays<=7) return 'Últimos 7 días';
+  return 'Anteriores';
+}
 
-  const container =
-    $('chatHistoryList');
+function historyDateText(updatedAt){
+  if(!updatedAt) return 'Sin fecha';
+  const date=new Date(updatedAt);
+  if(Number.isNaN(date.getTime())) return 'Sin fecha';
+  const now=new Date();
+  const sameDay=date.toDateString()===now.toDateString();
+  if(sameDay){
+    return date.toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'});
+  }
+  return date.toLocaleDateString('es-GT',{day:'2-digit',month:'short',year:'numeric'});
+}
 
-  if(!container){
-    console.error(
-      'No existe #chatHistoryList'
-    );
+function renderChatHistory(){
+  const container=$('chatHistoryList');
+  if(!container) return;
+  const countEl=$('historyCountValue');
+  if(countEl) countEl.textContent=String(CHAT_HISTORY_CACHE.length);
+
+  const term=String($('historySearchInput')?.value||'').trim().toLowerCase();
+  const conversations=CHAT_HISTORY_CACHE.filter(conversation=>{
+    if(!term) return true;
+    const haystack=[conversation.title,conversation.preview].filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(term);
+  });
+
+  if(!conversations.length){
+    const hasAny=CHAT_HISTORY_CACHE.length>0;
+    container.innerHTML=`
+      <div class="history-state">
+        <div class="history-state-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 10h8M8 13h5"/></svg>
+        </div>
+        <strong>${hasAny?'No encontramos coincidencias':'Aún no tienes conversaciones guardadas'}</strong>
+        <span>${hasAny?'Prueba con otra palabra o limpia la búsqueda.':'Cuando realices una consulta, aparecerá aquí para que puedas continuarla después.'}</span>
+        ${hasAny
+          ? '<button type="button" class="history-primary-button" id="historyClearSearchBtn">Limpiar búsqueda</button>'
+          : '<button type="button" class="history-primary-button" id="historyStartChatBtn">Iniciar una conversación</button>'}
+      </div>`;
+    $('historyStartChatBtn')?.addEventListener('click',startNewConversation);
+    $('historyClearSearchBtn')?.addEventListener('click',()=>{
+      if($('historySearchInput')) $('historySearchInput').value='';
+      renderChatHistory();
+    });
     return;
   }
 
-
-  // ==========================================
-  // CARGANDO
-  // ==========================================
-
-  container.innerHTML=`
-
-    <div class="history-state">
-
-      <div class="history-state-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M4 5.5h16v11H9l-5 3v-14Z"/>
-          <path d="M8 10h8M8 13h5"/>
-        </svg>
-      </div>
-
-      <strong>
-        Cargando tus conversaciones
-      </strong>
-
-      <span>
-        Un momento, estamos consultando tu historial.
-      </span>
-
-    </div>
-
-  `;
-
-
-  try{
-
-    const data =
-      await apiFetch(
-        '/api/chat/sessions'
-      );
-
-
-    console.log(
-      'Historial recibido:',
-      data
-    );
-
-
-    const conversations =
-      Array.isArray(data?.conversations)
-        ? data.conversations
-        : [];
-
-
-    // ==========================================
-    // VACÍO
-    // ==========================================
-
-    if(conversations.length===0){
-
-      container.innerHTML=`
-
-        <div class="history-state">
-
-          <div class="history-state-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M4 5.5h16v11H9l-5 3v-14Z"/>
-              <path d="M8 10h8M8 13h5"/>
-            </svg>
-          </div>
-
-          <strong>
-            Aún no tienes conversaciones guardadas
-          </strong>
-
-          <span>
-            Cuando realices una consulta con el asistente,
-            aparecerá aquí para que puedas continuarla después.
-          </span>
-
-          <button
-            type="button"
-            class="history-primary-button"
-            id="historyStartChatBtn"
-          >
-            Iniciar una conversación
-          </button>
-
-        </div>
-
-      `;
-
-
-      $('historyStartChatBtn')
-        ?.addEventListener(
-          'click',
-          startNewConversation
-        );
-
-
-      return;
-    }
-
-
-    // ==========================================
-    // CONVERSACIONES
-    // ==========================================
-
-    container.innerHTML='';
-
-
-    conversations.forEach(
-      conversation=>{
-
-        const item =
-          document.createElement('button');
-
-
-        item.type='button';
-
-        item.className=
-          'history-conversation';
-
-
-        // --------------------------------------
-        // TÍTULO
-        // --------------------------------------
-
-        const title =
-          (
-            conversation.title
-            || 'Conversación con el asistente'
-          ).trim();
-
-
-        // --------------------------------------
-        // PREVIEW
-        // --------------------------------------
-
-        const preview =
-          (
-            conversation.preview
-            || 'Continúa esta conversación con el asistente.'
-          ).trim();
-
-
-        // --------------------------------------
-        // MENSAJES
-        // --------------------------------------
-
-        const count =
-          Number(
-            conversation.messageCount || 0
-          );
-
-
-        const countText =
-          count===1
-            ? '1 mensaje'
-            : `${count} mensajes`;
-
-
-        // --------------------------------------
-        // FECHA
-        // --------------------------------------
-
-        let dateText =
-          'Sin fecha';
-
-
-        if(conversation.updatedAt){
-
-          const date =
-            new Date(
-              conversation.updatedAt
-            );
-
-
-          if(
-            !Number.isNaN(
-              date.getTime()
-            )
-          ){
-
-            dateText =
-              date.toLocaleDateString(
-                'es-GT',
-                {
-                  day:'2-digit',
-                  month:'short',
-                  year:'numeric'
-                }
-              );
-
-          }
-
-        }
-
-
-        item.innerHTML=`
-
-          <div class="history-conversation-icon">
-
-            <svg viewBox="0 0 24 24">
-              <path d="M4 5.5h16v11H9l-5 3v-14Z"/>
-              <path d="M8 10h8M8 13h5"/>
-            </svg>
-
-          </div>
-
-
-          <div class="history-conversation-info">
-
-            <div class="history-conversation-top">
-
-              <strong>
-                ${escapeHtml(title)}
-              </strong>
-
-              <time>
-                ${escapeHtml(dateText)}
-              </time>
-
-            </div>
-
-
-            <p>
-              ${escapeHtml(preview)}
-            </p>
-
-
-            <div class="history-conversation-bottom">
-
-              <span>
-                ${countText}
-              </span>
-
-              <span class="history-continue">
-                Continuar conversación
-
-                <svg viewBox="0 0 24 24">
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </span>
-
-            </div>
-
-          </div>
-
-        `;
-
-
-        item.addEventListener(
-          'click',
-          ()=>{
-
-            openChatConversation(
-              conversation.id
-            );
-
-          }
-        );
-
-
-        container.appendChild(
-          item
-        );
-
-      }
-    );
-
-
-  }catch(error){
-
-    console.error(
-      'Error al cargar historial:',
-      error
-    );
-
-
-    container.innerHTML=`
-
-      <div class="history-state history-state-error">
-
-        <div class="history-state-icon">
-
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 8v5"/>
-            <path d="M12 16h.01"/>
-          </svg>
-
-        </div>
-
-        <strong>
-          No pudimos cargar el historial
-        </strong>
-
-        <span>
-          ${escapeHtml(
-            error?.message
-            || 'Ocurrió un problema al consultar tus conversaciones.'
-          )}
+  container.innerHTML='';
+  const groups=new Map();
+  conversations.forEach(conversation=>{
+    const label=historyGroupLabel(conversation.updatedAt);
+    if(!groups.has(label)) groups.set(label,[]);
+    groups.get(label).push(conversation);
+  });
+
+  ['Hoy','Ayer','Últimos 7 días','Anteriores'].forEach(label=>{
+    const items=groups.get(label);
+    if(!items?.length) return;
+    const section=document.createElement('section');
+    section.className='history-group';
+    section.innerHTML=`<div class="history-group-title"><span>${escapeHtml(label)}</span><small>${items.length}</small></div>`;
+    const list=document.createElement('div');
+    list.className='history-group-list';
+
+    items.forEach(conversation=>{
+      const title=String(conversation.title||'Conversación con el asistente').trim();
+      const preview=String(conversation.preview||'Continúa esta conversación con el asistente.').trim();
+      const count=Number(conversation.messageCount||0);
+      const item=document.createElement('button');
+      item.type='button';
+      item.className='history-conversation';
+      item.setAttribute('aria-label',`Continuar conversación: ${title}`);
+      item.innerHTML=`
+        <span class="history-conversation-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 10h8M8 13h5"/></svg>
         </span>
+        <span class="history-conversation-info">
+          <span class="history-conversation-top">
+            <strong>${escapeHtml(title)}</strong>
+            <time>${escapeHtml(historyDateText(conversation.updatedAt))}</time>
+          </span>
+          <span class="history-conversation-preview">${escapeHtml(preview)}</span>
+          <span class="history-conversation-bottom">
+            <span class="history-message-count">${count===1?'1 mensaje':`${count} mensajes`}</span>
+            <span class="history-continue">Continuar <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+          </span>
+        </span>`;
+      item.addEventListener('click',()=>openChatConversation(conversation.id));
+      list.appendChild(item);
+    });
 
-        <button
-          type="button"
-          class="history-primary-button"
-          id="retryHistoryBtn"
-        >
-          Intentar nuevamente
-        </button>
+    section.appendChild(list);
+    container.appendChild(section);
+  });
+}
 
-      </div>
-
-    `;
-
-
-    $('retryHistoryBtn')
-      ?.addEventListener(
-        'click',
-        loadChatHistory
-      );
-
+async function loadChatHistory(){
+  const container=$('chatHistoryList');
+  if(!container){
+    console.error('No existe #chatHistoryList');
+    return;
   }
 
+  container.innerHTML=`
+    <div class="history-state">
+      <div class="history-state-icon history-loading-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 10h8M8 13h5"/></svg>
+      </div>
+      <strong>Cargando tus conversaciones</strong>
+      <span>Estamos consultando tu historial de forma segura.</span>
+    </div>`;
+
+  const search=$('historySearchInput');
+  if(search && !search.dataset.bound){
+    search.dataset.bound='1';
+    search.addEventListener('input',renderChatHistory);
+  }
+  const refresh=$('historyRefreshBtn');
+  if(refresh && !refresh.dataset.bound){
+    refresh.dataset.bound='1';
+    refresh.addEventListener('click',loadChatHistory);
+  }
+
+  try{
+    const data=await apiFetch('/api/chat/sessions');
+    CHAT_HISTORY_CACHE=Array.isArray(data?.conversations)?data.conversations:[];
+    renderChatHistory();
+  }catch(error){
+    console.error('Error al cargar historial:',error);
+    CHAT_HISTORY_CACHE=[];
+    if($('historyCountValue')) $('historyCountValue').textContent='0';
+    container.innerHTML=`
+      <div class="history-state history-state-error">
+        <div class="history-state-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+        </div>
+        <strong>No pudimos cargar el historial</strong>
+        <span>${escapeHtml(error?.message||'Ocurrió un problema al consultar tus conversaciones.')}</span>
+        <button type="button" class="history-primary-button" id="retryHistoryBtn">Intentar nuevamente</button>
+      </div>`;
+    $('retryHistoryBtn')?.addEventListener('click',loadChatHistory);
+  }
 }
+
 async function openChatConversation(
   conversationId
 ){

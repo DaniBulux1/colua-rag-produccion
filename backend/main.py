@@ -5,7 +5,7 @@ import json
 import logging
 import re
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -271,6 +271,34 @@ def portal_user(request: Request) -> dict:
         raise HTTPException(401, "La sesión de COLUA Web no es válida o expiró.") from exc
 
     return _get_or_create_portal_user(claims)
+
+
+def _guest_client_hash(request: Request) -> str:
+    """Identificador irreversible para limitar el chat público sin guardar la IP en claro."""
+    forwarded = request.headers.get("x-forwarded-for", "").split(",", 1)[0].strip()
+    address = forwarded or (request.client.host if request.client else "unknown")
+    user_agent = request.headers.get("user-agent", "")[:180]
+    return hash_identifier(f"guest-chat|{address}|{user_agent}")
+
+
+def _consume_guest_chat_quota(request: Request, limit: int = 8) -> str:
+    client_hash = _guest_client_hash(request)
+    since = datetime.now(timezone.utc) - timedelta(hours=1)
+    with connection() as conn:
+        # Limpieza liviana para que esta tabla no crezca indefinidamente.
+        conn.execute("DELETE FROM guest_chat_requests WHERE created_at < NOW() - INTERVAL '24 hours'")
+        used = conn.execute(
+            "SELECT COUNT(*) AS n FROM guest_chat_requests WHERE client_hash=%s AND created_at >= %s",
+            (client_hash, since),
+        ).fetchone()["n"]
+        if int(used) >= limit:
+            raise HTTPException(
+                429,
+                "Has alcanzado el límite de consultas como visitante. Inicia sesión para continuar y guardar tu historial.",
+            )
+        conn.execute("INSERT INTO guest_chat_requests(client_hash) VALUES (%s)", (client_hash,))
+        conn.commit()
+    return client_hash
 
 
 class LoginIn(BaseModel):
@@ -1136,6 +1164,92 @@ def get_chat_session(
 
         "messages": conversation_messages
     }
+@app.get("/api/portal/guest/chat/sessions/{conversation_id}")
+def portal_guest_get_chat_session(conversation_id: UUID, request: Request):
+    guest_hash = _guest_client_hash(request)
+    with connection() as conn:
+        session = conn.execute(
+            "SELECT id,user_id,guest_hash FROM chat_sessions WHERE id=%s LIMIT 1",
+            (conversation_id,),
+        ).fetchone()
+        if not session or session["user_id"] is not None or session.get("guest_hash") != guest_hash:
+            raise HTTPException(404, "La conversación de visitante no está disponible.")
+        rows = conn.execute(
+            """SELECT role,content,created_at
+               FROM chat_messages
+               WHERE chat_session_id=%s
+               ORDER BY created_at ASC,id ASC""",
+            (conversation_id,),
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "conversationId": str(session["id"]),
+        "messages": [
+            {
+                "role": row["role"],
+                "content": row["content"],
+                "createdAt": row["created_at"].isoformat() if row["created_at"] else None,
+            }
+            for row in rows
+        ],
+    }
+
+
+@app.post("/api/portal/guest/chat")
+def portal_guest_chat(payload: ChatIn, request: Request):
+    guest_hash = _consume_guest_chat_quota(request)
+    conversation_id = payload.conversation_id or uuid4()
+
+    with connection() as conn:
+        session = conn.execute(
+            "SELECT id,user_id,guest_hash FROM chat_sessions WHERE id=%s",
+            (conversation_id,),
+        ).fetchone()
+        if session:
+            if session["user_id"] is not None or session.get("guest_hash") != guest_hash:
+                raise HTTPException(403, "Conversación no autorizada.")
+        else:
+            conn.execute(
+                "INSERT INTO chat_sessions(id,user_id,guest_hash) VALUES (%s,NULL,%s)",
+                (conversation_id, guest_hash),
+            )
+
+        history = conn.execute(
+            "SELECT role,content FROM chat_messages WHERE chat_session_id=%s ORDER BY id DESC LIMIT 8",
+            (conversation_id,),
+        ).fetchall()
+        history = [dict(x) for x in reversed(history)]
+        conn.execute(
+            "INSERT INTO chat_messages(chat_session_id,user_id,role,content) VALUES (%s,NULL,'user',%s)",
+            (conversation_id, payload.message.strip()),
+        )
+        conn.commit()
+
+    try:
+        result = rag_answer(payload.message.strip(), history, None, conversation_id)
+    except Exception as exc:
+        logger.exception("Fallo al generar respuesta RAG para visitante")
+        raise HTTPException(503, "El asistente no está disponible temporalmente. Intenta nuevamente.") from exc
+
+    # El visitante puede informarse, pero la precalificación siempre exige inicio de sesión.
+    result["action"] = None
+
+    with connection() as conn:
+        conn.execute(
+            """INSERT INTO chat_messages(chat_session_id,user_id,role,content,provider,model,sources)
+               VALUES (%s,NULL,'assistant',%s,%s,%s,%s::jsonb)""",
+            (
+                conversation_id, result["answer"], result["provider"],
+                result["model"], json.dumps(result["sources"], ensure_ascii=False),
+            ),
+        )
+        conn.execute("UPDATE chat_sessions SET updated_at=NOW() WHERE id=%s", (conversation_id,))
+        conn.commit()
+
+    return {"ok": True, "conversationId": str(conversation_id), "guest": True, **result}
+
+
 @app.get("/api/portal/chat/sessions/{conversation_id}")
 def portal_get_chat_session(conversation_id: UUID, user: dict = Depends(portal_user)):
     with connection() as conn:

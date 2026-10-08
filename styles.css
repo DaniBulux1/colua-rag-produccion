@@ -1662,3 +1662,120 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .admin-password-modal-body{display:grid;gap:8px;padding:24px}
 .admin-password-modal .profile-footer{gap:10px}
 .admin-password-modal .profile-secondary-btn,.admin-password-modal .profile-save-btn{min-width:130px}
+
+/* =========================================================
+   HISTORIAL 2.0 - DISEÑO PROFESIONAL Y BÚSQUEDA
+   ========================================================= */
+.history-toolbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px 20px;
+  border-bottom:1px solid #e9eff5;
+  background:#fbfdff;
+}
+.history-search{
+  flex:1;
+  min-width:0;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:0 12px;
+  border:1px solid #d8e3ed;
+  border-radius:12px;
+  background:#fff;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+.history-search:focus-within{
+  border-color:#5a8fbd;
+  box-shadow:0 0 0 3px rgba(23,117,169,.09);
+}
+.history-search svg{
+  width:17px;height:17px;fill:none;stroke:#75899d;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;
+}
+.history-search input{
+  width:100%;min-width:0;border:0;outline:0;background:transparent;color:#213d59;font:inherit;font-size:11px;
+}
+.history-search input::placeholder{color:#9aa8b5}
+.history-refresh-btn{
+  min-height:42px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:0 13px;border:1px solid #d8e3ed;border-radius:12px;background:#fff;
+  color:#315f84;font:inherit;font-size:9px;font-weight:850;cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+.history-refresh-btn:hover{background:#f3f8fc;border-color:#bcd0e1;transform:translateY(-1px)}
+.history-refresh-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+.history-list{padding:6px 0 14px;background:#fff}
+.history-group{padding:7px 14px 2px}
+.history-group-title{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:8px 8px 7px;color:#667b90;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+}
+.history-group-title small{
+  min-width:22px;height:22px;display:grid;place-items:center;padding:0 6px;border-radius:999px;
+  background:#edf4f9;color:#426b8e;font-size:8px;font-weight:900;letter-spacing:0;
+}
+.history-group-list{display:flex;flex-direction:column;gap:8px}
+.history-conversation{
+  width:100%;display:grid;grid-template-columns:44px minmax(0,1fr);align-items:start;gap:13px;
+  padding:14px 15px;border:1px solid #e2eaf1;border-radius:14px;background:#fff;color:inherit;font:inherit;text-align:left;cursor:pointer;
+  box-shadow:0 4px 14px rgba(23,58,89,.035);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.history-conversation:hover{
+  transform:translateY(-1px);border-color:#bfd3e4;background:#fbfdff;box-shadow:0 8px 20px rgba(23,58,89,.07);
+}
+.history-conversation:focus-visible{outline:3px solid rgba(23,117,169,.14);outline-offset:2px}
+.history-conversation-icon{
+  width:44px;height:44px;display:grid;place-items:center;border-radius:12px;
+  background:linear-gradient(135deg,#edf6fc,#eaf8f4);color:#1672a6;
+}
+.history-conversation-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.history-conversation-info{min-width:0;display:flex;flex-direction:column;gap:6px}
+.history-conversation-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.history-conversation-top strong{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#173f64;font-size:11px;font-weight:900;line-height:1.4;
+}
+.history-conversation-top time{flex:none;color:#8a9aaa;font-size:8px;font-weight:700;white-space:nowrap}
+.history-conversation-preview{
+  display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  color:#6d7f91;font-size:9px;line-height:1.55;
+}
+.history-conversation-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:2px}
+.history-message-count{color:#91a0ae;font-size:8px;font-weight:700}
+.history-continue{display:inline-flex;align-items:center;gap:5px;color:#176da1;font-size:8px;font-weight:900}
+.history-continue svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .16s ease}
+.history-conversation:hover .history-continue svg{transform:translateX(2px)}
+
+.history-state{
+  min-height:245px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:36px 22px;text-align:center;color:#8192a3;
+}
+.history-state-icon{
+  width:54px;height:54px;display:grid;place-items:center;margin-bottom:5px;border-radius:16px;background:linear-gradient(135deg,#eaf5fc,#e8f7f3);
+}
+.history-state-icon svg{width:25px;height:25px;fill:none;stroke:#1471aa;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.history-state strong{color:#315a7d;font-size:12px;font-weight:900}
+.history-state span{max-width:380px;color:#8292a3;font-size:9px;line-height:1.6}
+.history-state-error .history-state-icon{background:#fff2ef}
+.history-state-error .history-state-icon svg{stroke:#b85c46}
+.history-primary-button{
+  min-height:38px;margin-top:8px;padding:0 15px;border:0;border-radius:10px;background:var(--blue-800);color:#fff;font:inherit;font-size:9px;font-weight:850;cursor:pointer;
+}
+.history-loading-icon{animation:historyPulse 1.25s ease-in-out infinite}
+@keyframes historyPulse{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.05);opacity:1}}
+
+@media(max-width:700px){
+  .history-header{align-items:flex-start;flex-direction:column;padding:20px}
+  .history-new-btn{width:100%;justify-content:center}
+  .history-toolbar{align-items:stretch;flex-direction:column;padding:12px 14px}
+  .history-refresh-btn{width:100%}
+  .history-group{padding-left:9px;padding-right:9px}
+  .history-conversation{grid-template-columns:38px minmax(0,1fr);gap:10px;padding:12px}
+  .history-conversation-icon{width:38px;height:38px}
+  .history-conversation-top{gap:8px}
+  .history-conversation-top strong{font-size:10px}
+  .history-conversation-preview{font-size:8.5px}
+}

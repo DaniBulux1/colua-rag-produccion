@@ -138,9 +138,21 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS chat_sessions (
                 id UUID PRIMARY KEY,
                 user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+                guest_hash CHAR(64),
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );
+            ALTER TABLE chat_sessions ADD COLUMN IF NOT EXISTS guest_hash CHAR(64);
+            CREATE INDEX IF NOT EXISTS ix_chat_sessions_guest_hash
+                ON chat_sessions(guest_hash) WHERE guest_hash IS NOT NULL;
+
+            CREATE TABLE IF NOT EXISTS guest_chat_requests (
+                id BIGSERIAL PRIMARY KEY,
+                client_hash CHAR(64) NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS ix_guest_chat_requests_client_time
+                ON guest_chat_requests(client_hash, created_at DESC);
             CREATE TABLE IF NOT EXISTS chat_messages (
                 id BIGSERIAL PRIMARY KEY,
                 chat_session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,

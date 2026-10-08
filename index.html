@@ -678,48 +678,46 @@
       <article class="history-card">
 
         <div class="history-header">
-
           <div class="history-header-copy">
-
             <span class="history-count-label">
-              CONVERSACIONES RECIENTES
+              <span id="historyCountValue">0</span> CONVERSACIONES
             </span>
-
-            <h3>
-              Continúa donde lo dejaste
-            </h3>
-
+            <h3>Tu historial de consultas</h3>
             <p>
-              Selecciona una conversación para abrirla
-              y seguir consultando al asistente.
+              Busca una conversación anterior y retómala exactamente donde la dejaste.
             </p>
-
           </div>
-
 
           <button
             class="new-chat-btn history-new-btn"
             id="newConversationHistoryBtn"
             type="button"
           >
-
             <svg viewBox="0 0 24 24">
               <path d="M12 5v14M5 12h14"/>
             </svg>
-
-            <span>
-              Nueva conversación
-            </span>
-
+            <span>Nueva conversación</span>
           </button>
-
         </div>
 
+        <div class="history-toolbar">
+          <label class="history-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="m20 20-3.5-3.5"/>
+            </svg>
+            <input id="historySearchInput" type="search" placeholder="Buscar por tema o contenido..." autocomplete="off">
+          </label>
+          <button type="button" class="history-refresh-btn" id="historyRefreshBtn" title="Actualizar historial">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 6v5h-5"/>
+              <path d="M19 11a7 7 0 1 0 1 5"/>
+            </svg>
+            Actualizar
+          </button>
+        </div>
 
-        <div
-          class="history-list"
-          id="chatHistoryList"
-        >
+        <div class="history-list" id="chatHistoryList">
 
           <div class="history-empty">
 
