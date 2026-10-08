@@ -1461,9 +1461,9 @@ def admin_toggle_active(user_id: int, user: dict = Depends(require_admin)):
 
 
 @app.get("/")
-def index(): return FileResponse(BASE_DIR / "index.html")
+def index(): return FileResponse(BASE_DIR / "index.html", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 @app.get("/app.js")
-def javascript(): return FileResponse(BASE_DIR / "app.js", media_type="application/javascript")
+def javascript(): return FileResponse(BASE_DIR / "app.js", media_type="application/javascript", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 @app.get("/styles.css")
-def stylesheet(): return FileResponse(BASE_DIR / "styles.css", media_type="text/css")
+def stylesheet(): return FileResponse(BASE_DIR / "styles.css", media_type="text/css", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
