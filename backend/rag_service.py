@@ -35,6 +35,8 @@ ESTILO DE CONVERSACIÓN:
 - Evita repetir la misma despedida o invitación en todas las respuestas.
 - Cuando sea natural, termina dejando abierta la conversación con una pregunta o una siguiente acción útil.
 - Utiliza listas solamente cuando ayuden a explicar requisitos, opciones, pasos o varios elementos.
+- Entrega texto limpio para una interfaz de chat: no utilices Markdown, asteriscos para negrita, encabezados con #, guiones bajos de formato ni bloques de código.
+- Si necesitas enumerar opciones, utiliza frases breves o viñetas simples sin caracteres de formato Markdown.
 - Puedes utilizar expresiones naturales como "Claro", "Con gusto", "Perfecto", "En este caso", "Te explico" o "Podemos revisarlo", pero no las repitas mecánicamente.
 
 USO DE LA INFORMACIÓN:
@@ -231,6 +233,17 @@ def _retrieval_query(question: str, history: list[dict]) -> str:
     return "Contexto de preguntas anteriores: " + " | ".join(previous_user) + "\nPregunta actual: " + base
 
 
+
+def _clean_generated_text(text: str) -> str:
+    """Normaliza respuestas para mostrarlas como texto limpio en el chat."""
+    value = str(text or "")
+    value = re.sub(r"\*\*([^*]+)\*\*", r"\1", value)
+    value = re.sub(r"__([^_]+)__", r"\1", value)
+    value = re.sub(r"(?m)^\s*\*\s+", "• ", value)
+    value = re.sub(r"(?m)^\s*#{1,6}\s+", "", value)
+    value = re.sub(r"`([^`]+)`", r"\1", value)
+    return value.strip()
+
 def answer(question: str, history: list[dict], user_id=None, chat_session_id=None) -> dict:
     smalltalk = _smalltalk(question)
     if smalltalk:
@@ -241,7 +254,7 @@ def answer(question: str, history: list[dict], user_id=None, chat_session_id=Non
     results=retrieve(_retrieval_query(question, history),user_id,chat_session_id)
     if not results:
         return {
-            "answer":"No encontré información suficiente en la base documental aprobada para responder con precisión. Para evitar darte un dato incorrecto, te recomiendo consultar a un asesor de COLUA.",
+            "answer":"Esa información no se encuentra disponible actualmente en el sistema. Para recibir una orientación correcta, puedes comunicarte con COLUA al +502 7795-7795 o consultar directamente con la agencia más cercana.",
             "sources":[],"provider":"none","model":"none","confidence":0.0,"action":_intent_action(question)
         }
     context=_context(results)
@@ -258,7 +271,7 @@ def answer(question: str, history: list[dict], user_id=None, chat_session_id=Non
             else:
                 raise RuntimeError(f"Proveedor LLM no soportado: {provider}")
             if text:
-                return {"answer":text,"sources":_sources(results),"provider":p,"model":m,"confidence":round(float(results[0]["score"]),4),"action":_intent_action(question)}
+                return {"answer":_clean_generated_text(text),"sources":_sources(results),"provider":p,"model":m,"confidence":round(float(results[0]["score"]),4),"action":_intent_action(question)}
         except Exception as exc:
             last_error=exc
     raise RuntimeError(f"No fue posible generar la respuesta con los proveedores configurados: {last_error}")

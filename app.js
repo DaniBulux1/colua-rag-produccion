@@ -771,11 +771,22 @@ $('logoutBtn').addEventListener('click',async ()=>{
   $('loginPassword').value='';
 });
 
+function cleanChatText(text){
+  return String(text || '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/(^|\n)\s*\*\s+/g, '$1• ')
+    .replace(/(^|\n)\s*#{1,6}\s+/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .trim();
+}
+
 function addMessage(text,sender='bot'){
   const row=document.createElement('div'); row.className=`message-row ${sender}`;
   const avatar=document.createElement('div'); avatar.className='message-avatar'; avatar.textContent=sender==='bot'?'AI':'TÚ';
   const bubble=document.createElement('div'); bubble.className='message-bubble';
-  bubble.innerHTML=`${escapeHtml(text).replace(/\n/g,'<br>')}<span class="message-meta">${sender==='bot'?'Asistente COLUA':'Tú'} · ${currentTime()}</span>`;
+  const visibleText=sender==='bot' ? cleanChatText(text) : String(text || '');
+  bubble.innerHTML=`${escapeHtml(visibleText).replace(/\n/g,'<br>')}<span class="message-meta">${sender==='bot'?'Asistente COLUA':'Tú'} · ${currentTime()}</span>`;
   row.append(avatar,bubble); messages.appendChild(row); messages.scrollTop=messages.scrollHeight;
 }
 function showTyping(callback){ const row=document.createElement('div'); row.className='message-row bot'; row.innerHTML='<div class="message-avatar">AI</div><div class="message-bubble typing"><i></i><i></i><i></i></div>'; messages.appendChild(row); messages.scrollTop=messages.scrollHeight; setTimeout(()=>{row.remove();callback();},650); }
@@ -844,10 +855,10 @@ async function checkRagStatus(){
   if(!label) return;
   try{
     const data=await apiFetch(RAG_STATUS_URL,{cache:'no-store'});
-    label.textContent=`RAG en nube conectado · ${data.documents||0} fuentes · ${data.provider||'LLM'}`;
+    label.textContent='Asistente disponible';
     if(line) line.classList.remove('rag-offline');
   }catch{
-    label.textContent='RAG en nube no disponible';
+    label.textContent='Servicio temporalmente en actualización';
     if(line) line.classList.add('rag-offline');
   }
 }
@@ -866,7 +877,7 @@ async function queryRag(message){
 
 function ragFallbackAnswer(){
   return {
-    answer:'El servicio de inteligencia artificial no está disponible temporalmente. Para evitar darte información incorrecta, intenta nuevamente en unos minutos o consulta a un asesor de COLUA.',
+    answer:'En este momento la información se está procesando y no puedo completar tu consulta. Intenta nuevamente en unos minutos. Si necesitas atención inmediata, puedes comunicarte con COLUA al +502 7795-7795 o consultar el directorio de agencias.',
     topic:'otros'
   };
 }
@@ -903,7 +914,10 @@ async function answerWithRag(text, topicHint=null){
     typing.remove();
     const fallback=ragFallbackAnswer();
     addMessage(fallback.answer,'bot');
-    if(typeof showToast==='function') showToast(error.message||'RAG no disponible.','error');
+    addActionButtons([
+      {label:'Ver agencias',primary:true,onClick:openAgencyDirectory},
+      {label:`Llamar al ${CONTACT_PHONE}`,onClick:()=>callPhone(CONTACT_PHONE)}
+    ]);
   }
 }
 

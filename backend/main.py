@@ -1230,7 +1230,7 @@ def portal_guest_chat(payload: ChatIn, request: Request):
         result = rag_answer(payload.message.strip(), history, None, conversation_id)
     except Exception as exc:
         logger.exception("Fallo al generar respuesta RAG para visitante")
-        raise HTTPException(503, "El asistente no está disponible temporalmente. Intenta nuevamente.") from exc
+        raise HTTPException(503, "En este momento la información se está procesando. Intenta nuevamente en unos minutos o comunícate con COLUA al +502 7795-7795.") from exc
 
     # El visitante puede informarse, pero la precalificación siempre exige inicio de sesión.
     result["action"] = None
@@ -1315,7 +1315,7 @@ def portal_chat(payload: ChatIn, user: dict = Depends(portal_user)):
         result = rag_answer(payload.message.strip(), history, user["id"], conversation_id)
     except Exception as exc:
         logger.exception("Fallo al generar respuesta RAG desde COLUA Web")
-        raise HTTPException(503, "El asistente no está disponible temporalmente. Intenta nuevamente.") from exc
+        raise HTTPException(503, "En este momento la información se está procesando. Intenta nuevamente en unos minutos o comunícate con COLUA al +502 7795-7795.") from exc
 
     with connection() as conn:
         conn.execute(
@@ -1353,7 +1353,7 @@ def chat(payload: ChatIn, user: dict = Depends(require_csrf)):
         result=rag_answer(payload.message.strip(),history,user["id"],conversation_id)
     except Exception as exc:
         logger.exception("Fallo al generar respuesta RAG")
-        raise HTTPException(503,"El servicio de IA no está disponible temporalmente. Intenta nuevamente o consulta a un asesor.") from exc
+        raise HTTPException(503,"En este momento la información se está procesando. Intenta nuevamente en unos minutos o comunícate con COLUA al +502 7795-7795.") from exc
     with connection() as conn:
         conn.execute(
             """INSERT INTO chat_messages(chat_session_id,user_id,role,content,provider,model,sources)
