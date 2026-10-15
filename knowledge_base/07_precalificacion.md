@@ -5,7 +5,7 @@ Actualizado: 2026-09-07
 La precalificación del chatbot es preliminar y orientativa. Su objetivo es recopilar información estructurada para que un asesor de la agencia correspondiente pueda revisar el caso y dar seguimiento.
 
 ## Datos que recopila
-El flujo puede solicitar consentimiento, ingresos mensuales aproximados, situación laboral o actividad económica, antigüedad, obligaciones mensuales, monto solicitado, destino del crédito, existencia de cuotas actualmente en atraso, teléfono y medio de contacto preferido.
+El flujo puede solicitar consentimiento, rango de ingresos mensuales aproximados (se elige de una lista de rangos, sin escribir el monto exacto), situación laboral o actividad económica, antigüedad, obligaciones mensuales, monto solicitado, destino del crédito, existencia de cuotas actualmente en atraso, teléfono y medio de contacto preferido.
 
 ## Reglas de seguridad de respuesta
 El chatbot no debe inventar tasas, plazos, cuotas, montos máximos, requisitos internos, criterios de score ni políticas de aprobación. Tampoco debe prometer aprobación, desembolso o condiciones específicas. Si la información no existe en la base aprobada, debe reconocerlo y derivar al usuario a un asesor.

@@ -332,6 +332,13 @@ class PrequalIn(BaseModel):
 
     income: float = Field(gt=0)
 
+    # Rango de ingresos elegido por la persona (ej. "Q1,001 a Q2,000");
+    # "income" conserva el límite inferior del rango para el análisis.
+    income_range: str = Field(
+        default="",
+        max_length=60
+    )
+
     employment: str = Field(
         min_length=3,
         max_length=300
@@ -588,7 +595,7 @@ def _prequal_row_to_dict(row: dict) -> dict:
     return {
         "dbId":row["id"],"id":row["code"],"username":row["username"],"applicantName":row["applicant_name"],
         "agencyId":row["agency_id"],"agency":row["agency"],"phone":row["phone"],"contactPreference":row["contact_preference"],
-        "income":float(row["income"]),"employment":row["employment"],"tenure":row["tenure_months"],
+        "income":float(row["income"]),"incomeRange":row.get("income_range") or "","employment":row["employment"],"tenure":row["tenure_months"],
         "debts":float(row["debts"]),"available":float(row["available"]),"requestedAmount":float(row["requested_amount"]),
         "purpose":row["purpose"],"arrears":row["arrears"],"debtRatio":float(row["debt_ratio"]),
         "preliminaryResult":row["preliminary_result"],"workflowStatus":row["workflow_status"],
@@ -786,6 +793,7 @@ def create_prequalification(
                 phone,
                 contact_preference,
                 income,
+                income_range,
                 employment,
                 tenure_months,
                 debts,
@@ -798,7 +806,7 @@ def create_prequalification(
             )
             VALUES (
                 %s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s
+                %s,%s,%s,%s,%s,%s,%s,%s,%s
             )
             RETURNING id
             """,
@@ -810,6 +818,7 @@ def create_prequalification(
                 phone,
                 payload.contact_preference,
                 payload.income,
+                payload.income_range.strip(),
                 payload.employment.strip(),
                 payload.tenure_months,
                 payload.debts,

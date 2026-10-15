@@ -124,6 +124,7 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS ix_prequal_agency ON prequalifications(agency_id, created_at DESC);
             CREATE INDEX IF NOT EXISTS ix_prequal_user ON prequalifications(user_id, created_at DESC);
+            ALTER TABLE prequalifications ADD COLUMN IF NOT EXISTS income_range VARCHAR(60) NOT NULL DEFAULT '';
 
             CREATE TABLE IF NOT EXISTS prequalification_history (
                 id BIGSERIAL PRIMARY KEY,

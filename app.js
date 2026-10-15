@@ -132,6 +132,7 @@ function normalizePrequalification(record){
     phone:record.phone || '',
     contactPreference:record.contactPreference || 'No indicado',
     income:Number(record.income || 0),
+    incomeRange:record.incomeRange || record.income_range || '',
     employment:record.employment || 'No indicado',
     tenure:Number(record.tenure || record.tenure_months || 0),
     debts:Number(record.debts || 0),
@@ -963,6 +964,31 @@ function classify(text){
 }
 
 let prequal = null;
+
+// Rangos de ingresos mensuales: muchas personas prefieren no indicar un monto exacto.
+// "value" es el límite inferior del rango, para que el análisis de capacidad sea conservador.
+const INCOME_RANGES = [
+  {label:'Menos de Q500', value:250},
+  {label:'Q500 a Q1,000', value:500},
+  {label:'Q1,001 a Q2,000', value:1001},
+  {label:'Q2,001 a Q3,000', value:2001},
+  {label:'Q3,001 a Q5,000', value:3001},
+  {label:'Q5,001 a Q8,000', value:5001},
+  {label:'Q8,001 a Q12,000', value:8001},
+  {label:'Más de Q12,000', value:12001}
+];
+
+function findIncomeRange(text){
+  const n=normalizeText(text);
+  const byLabel=INCOME_RANGES.find(r=>normalizeText(r.label)===n);
+  if(byLabel) return byLabel;
+  // Si la persona escribe un monto, se ubica en el rango que le corresponde.
+  const amount=parseMoney(text);
+  if(!Number.isFinite(amount) || amount<=0) return null;
+  if(amount<500) return INCOME_RANGES[0];
+  return [...INCOME_RANGES].reverse().find(r=>r.value>=500 && amount>=r.value) || null;
+}
+
 const PREQUAL_STEPS = [
   {
     key:'consent',
@@ -973,7 +999,8 @@ const PREQUAL_STEPS = [
   {
     key:'income',
     label:'Ingresos mensuales',
-    prompt:'Para comenzar, ¿cuáles son aproximadamente tus ingresos mensuales? Puedes indicarme el monto en quetzales, por ejemplo: Q5,000.'
+    prompt:'Para comenzar, ¿en qué rango se encuentran tus ingresos mensuales aproximados? Selecciona una de las opciones.',
+    options:INCOME_RANGES.map(r=>r.label)
   },
 
   {
@@ -1053,6 +1080,29 @@ function parseContactPreference(text){
   return '';
 }
 
+// Muestra el mensaje de un paso y, si el paso tiene opciones, los botones para elegir
+function showPrequalStepMessage(message, step){
+  addMessage(message,'bot');
+  if(!step || !Array.isArray(step.options) || !step.options.length) return;
+  const row=document.createElement('div');
+  row.className='chat-actions-row prequal-options-row';
+  step.options.forEach(option=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='chat-action';
+    b.textContent=option;
+    b.addEventListener('click',async ()=>{
+      if(!prequal || PREQUAL_STEPS[prequal.step]?.key!==step.key) return;
+      row.remove();
+      addMessage(option,'user');
+      await processPrequalificationAnswer(option);
+    });
+    row.appendChild(b);
+  });
+  messages.appendChild(row);
+  messages.scrollTop=messages.scrollHeight;
+}
+
 function updatePrequalStatus(){
   const box=$('prequalStatus');
   if(!prequal){ box.classList.add('hidden'); return; }
@@ -1119,7 +1169,7 @@ function buildPrequalTransition(completedStep, data, nextStep){
 
     case 'income':
       confirmation=
-        `Perfecto, tomaré como referencia ingresos mensuales aproximados de ${formatMoney(data.income)}.`;
+        `Perfecto, registré tus ingresos mensuales en el rango de ${data.incomeRange}.`;
       break;
 
     case 'employment':
@@ -1188,7 +1238,10 @@ async function processPrequalificationAnswer(text){
       else prequal.data.consent=true;
       break;
     case 'income': {
-      const v=parseMoney(text); if(!Number.isFinite(v)||v<=0){ valid=false; error='Ingresa un monto válido de ingresos mensuales. Ejemplo: 5000.'; } else prequal.data.income=v; break;
+      const range=findIncomeRange(text);
+      if(!range){ valid=false; error='Selecciona el rango que mejor describa tus ingresos mensuales.'; }
+      else { prequal.data.income=range.value; prequal.data.incomeRange=range.label; document.querySelectorAll('.prequal-options-row').forEach(r=>r.remove()); }
+      break;
     }
     case 'employment':
       if(text.trim().length<3){ valid=false; error='Indica brevemente tu situación laboral actual.'; } else prequal.data.employment=text.trim();
@@ -1247,7 +1300,7 @@ async function processPrequalificationAnswer(text){
     }
   }
 
-  if(!valid){ showTyping(()=>addMessage(error,'bot')); return true; }
+  if(!valid){ showTyping(()=>showPrequalStepMessage(error,step)); return true; }
 
   const completedStep=step;
 
@@ -1267,7 +1320,7 @@ async function processPrequalificationAnswer(text){
       );
 
     showTyping(()=>{
-      addMessage(conversationalMessage,'bot');
+      showPrequalStepMessage(conversationalMessage,nextStep);
     });
 
   } else {
@@ -1296,6 +1349,7 @@ async function completePrequalification(){
         phone:data.phone,
         contact_preference:data.contactPreference,
         income:data.income,
+        income_range:data.incomeRange || '',
         employment:data.employment,
         tenure_months:data.tenure,
         debts:data.debts,
@@ -1330,7 +1384,7 @@ async function completePrequalification(){
       `PRECALIFICACIÓN PRELIMINAR COMPLETADA\n\n`+
 
       `RESUMEN DE TU INFORMACIÓN\n`+
-      `Ingresos mensuales: ${formatMoney(data.income)}\n`+
+      `Ingresos mensuales: ${data.incomeRange || formatMoney(data.income)}\n`+
       `Situación laboral: ${data.employment}\n`+
       `Antigüedad: ${data.tenure} meses\n`+
       `Obligaciones financieras: ${formatMoney(data.debts)}\n`+
@@ -1434,7 +1488,7 @@ async function answerFreeText(text){
     const currentStep=PREQUAL_STEPS[prequal.step];
     await answerWithRag(text);
     if(prequal && currentStep){
-      showTyping(()=>addMessage(`Para continuar con tu precalificación: ${currentStep.prompt}`,'bot'));
+      showTyping(()=>showPrequalStepMessage(`Para continuar con tu precalificación: ${currentStep.prompt}`,currentStep));
     }
     return;
   }
@@ -1588,7 +1642,7 @@ async function openRequestDetail(requestId){
     $('detailCreatedAt').textContent=record.createdAt;
     $('detailPhone').textContent=formatPhone(record.phone);
     $('detailContactPreference').textContent=record.contactPreference;
-    $('detailIncome').textContent=formatMoney(record.income);
+    $('detailIncome').textContent=record.incomeRange || formatMoney(record.income);
     $('detailDebts').textContent=formatMoney(record.debts);
     $('detailAvailable').textContent=formatMoney(record.available);
     $('detailDebtRatio').textContent=`${Number(record.debtRatio||0).toFixed(1)}%`;
