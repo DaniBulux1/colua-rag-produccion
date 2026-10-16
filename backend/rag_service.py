@@ -55,6 +55,11 @@ PRECALIFICACIÓN:
 - No presentes la precalificación como una decisión definitiva.
 - La precalificación es únicamente orientativa y posteriormente puede requerir revisión de COLUA.
 
+RESPUESTAS POR NIVELES:
+- Cuando el usuario pregunte de forma general qué productos, tipos o líneas existen (por ejemplo "¿qué tipos de crédito tienen?"), responde primero solo con los nombres de cada opción, sin describir cada una.
+- Da requisitos, condiciones, destinos o características únicamente cuando el usuario pregunte por una opción específica.
+- Al listar opciones, invita al usuario a elegir una para darle más información.
+
 CONTINUIDAD:
 - Ten en cuenta el historial reciente para evitar repetir información.
 - Si el usuario hace una pregunta de seguimiento, responde considerando lo que ya estaba hablando.
@@ -70,6 +75,48 @@ def _intent_action(question: str) -> str | None:
     if re.search(r"agencia|ubicaci[oó]n|direcci[oó]n|d[oó]nde.*colua", normalized):
         return "show_agencies"
     return None
+
+
+_CATALOG_SINGULAR = r"cr[eé]dito|pr[eé]stamo|ahorro|cuenta|seguro|tarjeta|servicio|producto|beneficio|remesa"
+_CATALOG_PLURAL = r"cr[eé]ditos|pr[eé]stamos|ahorros|cuentas|seguros|tarjetas|servicios|productos|beneficios"
+_CATALOG_DETAIL = (
+    r"requisito|document|tasa|inter[eé]s|plazo|monto|cuota|garant[ií]a|"
+    r"c[oó]mo (solicit|aplic|pued)|proceso|paso|m[aá]s informaci[oó]n|detalle|"
+    r"precalific"
+)
+
+CATALOG_INSTRUCTION = (
+    "MODO LISTADO: el usuario pide un panorama general. Responde solo con una frase breve "
+    "de introducción, luego los nombres de las opciones que aparezcan en el CONTEXTO RAG "
+    "(una por línea, cada línea iniciando con \"• \" y conteniendo únicamente el nombre, sin "
+    "descripción, requisitos, tasas ni montos) y termina con una pregunta corta invitando a "
+    "elegir una opción para darle más detalles."
+)
+
+
+def _is_catalog_question(question: str) -> bool:
+    """Preguntas generales del tipo "¿qué tipos de crédito tienen?"."""
+    n = re.sub(r"\s+", " ", question.strip().lower())
+    if re.search(_CATALOG_DETAIL, n):
+        return False
+    if re.search(rf"\b(tipos?|clases?|l[ií]neas?|opciones|productos|cat[aá]logo|modalidades)\s+de\s+({_CATALOG_SINGULAR})", n):
+        return True
+    if re.search(rf"\b(qu[eé]|cu[aá]les)\b.*\b({_CATALOG_PLURAL})\b", n):
+        return True
+    return False
+
+
+def _extract_options(text: str) -> list[str]:
+    """Toma los nombres listados con viñetas para mostrarlos como botones."""
+    options = []
+    for line in str(text or "").splitlines():
+        match = re.match(r"^\s*(?:•|-|\d+[.)])\s+(.+?)\s*$", line)
+        if not match:
+            continue
+        label = match.group(1).strip().rstrip(".:;")
+        if 2 <= len(label) <= 70 and label not in options:
+            options.append(label)
+    return options[:12]
 
 
 def _smalltalk(question: str) -> str | None:
@@ -228,6 +275,9 @@ def _retrieval_query(question: str, history: list[dict]) -> str:
             "seguimiento por agencia, proceso posterior y reglas de seguridad.\n"
         )
     base = prefix + question
+    previous_assistant = [str(m.get("content", "")).strip() for m in history if m.get("role") == "assistant"]
+    if previous_assistant and previous_assistant[-1] and len(question.split()) <= 6:
+        base += "\nOpciones mencionadas en la respuesta anterior: " + previous_assistant[-1][:500]
     if not previous_user:
         return base
     return "Contexto de preguntas anteriores: " + " | ".join(previous_user) + "\nPregunta actual: " + base
@@ -258,6 +308,8 @@ def answer(question: str, history: list[dict], user_id=None, chat_session_id=Non
             "sources":[],"provider":"none","model":"none","confidence":0.0,"action":_intent_action(question)
         }
     context=_context(results)
+    catalog=_is_catalog_question(question)
+    prompt_question=f"{question}\n\n{CATALOG_INSTRUCTION}" if catalog else question
     providers=[settings.llm_provider]
     if settings.llm_fallback_provider not in {"", "none", settings.llm_provider}:
         providers.append(settings.llm_fallback_provider)
@@ -265,13 +317,18 @@ def answer(question: str, history: list[dict], user_id=None, chat_session_id=Non
     for provider in providers:
         try:
             if provider=="openai":
-                text,p,m=_openai_generate(question,context,history,user_id,chat_session_id)
+                text,p,m=_openai_generate(prompt_question,context,history,user_id,chat_session_id)
             elif provider=="anthropic":
-                text,p,m=_anthropic_generate(question,context,history,user_id,chat_session_id)
+                text,p,m=_anthropic_generate(prompt_question,context,history,user_id,chat_session_id)
             else:
                 raise RuntimeError(f"Proveedor LLM no soportado: {provider}")
             if text:
-                return {"answer":_clean_generated_text(text),"sources":_sources(results),"provider":p,"model":m,"confidence":round(float(results[0]["score"]),4),"action":_intent_action(question)}
+                clean=_clean_generated_text(text)
+                return {
+                    "answer":clean,"sources":_sources(results),"provider":p,"model":m,
+                    "confidence":round(float(results[0]["score"]),4),"action":_intent_action(question),
+                    "options":_extract_options(clean) if catalog else [],
+                }
         except Exception as exc:
             last_error=exc
     raise RuntimeError(f"No fue posible generar la respuesta con los proveedores configurados: {last_error}")

@@ -901,6 +901,19 @@ function applyRagActions(data, topic){
   serviceActions(topic);
 }
 
+// Opciones listadas por el asistente (ej. tipos de crédito): al elegir una se pide su detalle
+function addRagOptions(options){
+  if(!Array.isArray(options) || !options.length) return;
+  addActionButtons(options.map(option=>({
+    label:option,
+    onClick:async ()=>{
+      const question=`Quiero más información sobre ${option}`;
+      addMessage(question,'user');
+      await answerWithRag(question);
+    }
+  })));
+}
+
 async function answerWithRag(text, topicHint=null){
   const topic=topicHint||classify(text);
   registerQuery(topic,text);
@@ -910,6 +923,7 @@ async function answerWithRag(text, topicHint=null){
     typing.remove();
     addMessage(data.answer,'bot');
     addRagSources(data.sources);
+    addRagOptions(data.options);
     applyRagActions(data,topic);
   }catch(error){
     typing.remove();
